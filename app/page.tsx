@@ -48,12 +48,24 @@ export default function HomePage() {
   const [companyName, setCompanyName] = useState("Your Company");
   const [tagline, setTagline] = useState("Premium Metal Cards");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState<number>(packages[0].min);
+  const [quantityInput, setQuantityInput] = useState<string>(String(packages[0].min));
+
+  const currentQuantity = useMemo(() => {
+    const parsed = Number(quantityInput);
+    if (quantityInput.trim() === "" || Number.isNaN(parsed)) {
+      return selectedPackage.min;
+    }
+    return Math.max(parsed, selectedPackage.min);
+  }, [quantityInput, selectedPackage.min]);
 
   const changePackage = (pkg: CardPackage) => {
     setSelectedPackage(pkg);
     setSelectedColor(pkg.colors[0]);
-    setQuantity((current) => Math.max(current, pkg.min));
+
+    const parsed = Number(quantityInput);
+    if (quantityInput.trim() === "" || Number.isNaN(parsed) || parsed < pkg.min) {
+      setQuantityInput(String(pkg.min));
+    }
   };
 
   const handleLogoUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -70,17 +82,30 @@ export default function HomePage() {
   };
 
   const handleQuantityChange = (value: string) => {
-    const parsed = Number(value);
-    if (Number.isNaN(parsed)) {
-      setQuantity(selectedPackage.min);
+    if (value === "") {
+      setQuantityInput("");
       return;
     }
-    setQuantity(Math.max(parsed, selectedPackage.min));
+
+    if (/^\d+$/.test(value)) {
+      setQuantityInput(value);
+    }
+  };
+
+  const handleQuantityBlur = () => {
+    const parsed = Number(quantityInput);
+
+    if (quantityInput.trim() === "" || Number.isNaN(parsed) || parsed < selectedPackage.min) {
+      setQuantityInput(String(selectedPackage.min));
+      return;
+    }
+
+    setQuantityInput(String(parsed));
   };
 
   const total = useMemo(() => {
-    return (quantity * selectedPackage.price).toFixed(2);
-  }, [quantity, selectedPackage.price]);
+    return (currentQuantity * selectedPackage.price).toFixed(2);
+  }, [currentQuantity, selectedPackage.price]);
 
   const quickbooksMessage = useMemo(() => {
     return encodeURIComponent(
@@ -88,14 +113,14 @@ export default function HomePage() {
 
 Thickness: ${selectedPackage.thickness}
 Color: ${selectedColor}
-Quantity: ${quantity}
+Quantity: ${currentQuantity}
 Estimated total: $${total}
 Company name: ${companyName}
 Text on card: ${tagline}
 
 Please send me the QuickBooks invoice.`
     );
-  }, [selectedPackage.thickness, selectedColor, quantity, total, companyName, tagline]);
+  }, [selectedPackage.thickness, selectedColor, currentQuantity, total, companyName, tagline]);
 
   const cardStyle = useMemo(() => {
     switch (selectedColor.toLowerCase()) {
@@ -247,10 +272,12 @@ Please send me the QuickBooks invoice.`
               <label className="field">
                 <span>Quantity</span>
                 <input
-                  type="number"
-                  min={selectedPackage.min}
-                  value={quantity}
+                  type="text"
+                  inputMode="numeric"
+                  value={quantityInput}
                   onChange={(e) => handleQuantityChange(e.target.value)}
+                  onBlur={handleQuantityBlur}
+                  placeholder={`Minimum ${selectedPackage.min}`}
                 />
               </label>
 
@@ -297,7 +324,7 @@ Please send me the QuickBooks invoice.`
                 </div>
                 <div className="totalsRow">
                   <span>Quantity</span>
-                  <strong>{quantity}</strong>
+                  <strong>{currentQuantity}</strong>
                 </div>
                 <div className="totalsRow total">
                   <span>Estimated total</span>
@@ -361,7 +388,7 @@ Please send me the QuickBooks invoice.`
               <strong>Color:</strong> {selectedColor}
             </p>
             <p>
-              <strong>Quantity:</strong> {quantity}
+              <strong>Quantity:</strong> {currentQuantity}
             </p>
             <p>
               <strong>Minimum:</strong> {selectedPackage.min} cards
@@ -527,7 +554,6 @@ Please send me the QuickBooks invoice.`
         }
 
         .field input[type="text"],
-        .field input[type="number"],
         .field input[type="file"] {
           width: 100%;
           border-radius: 12px;
