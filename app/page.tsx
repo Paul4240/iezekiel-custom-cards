@@ -189,7 +189,7 @@ Please send me the QuickBooks invoice.`
             <div className="eyebrow">Premium Metal Business Cards</div>
             <h1>{OWNER} Custom Metal Cards</h1>
             <p>
-              Premium metal business cards with clean pricing, strong presentation,
+              Premium metal business cards with clear pricing, strong presentation,
               and fast ordering. Text or email to inquire about orders.
             </p>
 
