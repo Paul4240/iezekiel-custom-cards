@@ -48,10 +48,12 @@ export default function HomePage() {
   const [companyName, setCompanyName] = useState("Your Company");
   const [tagline, setTagline] = useState("Premium Metal Cards");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState<number>(packages[0].min);
 
   const changePackage = (pkg: CardPackage) => {
     setSelectedPackage(pkg);
     setSelectedColor(pkg.colors[0]);
+    setQuantity((current) => Math.max(current, pkg.min));
   };
 
   const handleLogoUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -66,6 +68,34 @@ export default function HomePage() {
     };
     reader.readAsDataURL(file);
   };
+
+  const handleQuantityChange = (value: string) => {
+    const parsed = Number(value);
+    if (Number.isNaN(parsed)) {
+      setQuantity(selectedPackage.min);
+      return;
+    }
+    setQuantity(Math.max(parsed, selectedPackage.min));
+  };
+
+  const total = useMemo(() => {
+    return (quantity * selectedPackage.price).toFixed(2);
+  }, [quantity, selectedPackage.price]);
+
+  const quickbooksMessage = useMemo(() => {
+    return encodeURIComponent(
+      `Hi, I want to order metal cards.
+
+Thickness: ${selectedPackage.thickness}
+Color: ${selectedColor}
+Quantity: ${quantity}
+Estimated total: $${total}
+Company name: ${companyName}
+Text on card: ${tagline}
+
+Please send me the QuickBooks invoice.`
+    );
+  }, [selectedPackage.thickness, selectedColor, quantity, total, companyName, tagline]);
 
   const cardStyle = useMemo(() => {
     switch (selectedColor.toLowerCase()) {
@@ -184,7 +214,7 @@ export default function HomePage() {
         <section className="builder">
           <h2>Card Preview Builder</h2>
           <p className="sectionText">
-            Add company info and upload a logo to preview how the card can look.
+            Add company info, upload a logo, choose quantity, and see the total instantly.
           </p>
 
           <div className="builderGrid">
@@ -214,8 +244,18 @@ export default function HomePage() {
                 <input type="file" accept="image/*" onChange={handleLogoUpload} />
               </label>
 
+              <label className="field">
+                <span>Quantity</span>
+                <input
+                  type="number"
+                  min={selectedPackage.min}
+                  value={quantity}
+                  onChange={(e) => handleQuantityChange(e.target.value)}
+                />
+              </label>
+
               <div className="builderNote">
-                Uploaded logo and text will display live on the card preview.
+                Minimum order for this package is {selectedPackage.min} cards.
               </div>
             </div>
 
@@ -248,6 +288,24 @@ export default function HomePage() {
                     <span>{selectedColor}</span>
                   </div>
                 </div>
+              </div>
+
+              <div className="totalsCard">
+                <div className="totalsRow">
+                  <span>Price per card</span>
+                  <strong>{selectedPackage.label}</strong>
+                </div>
+                <div className="totalsRow">
+                  <span>Quantity</span>
+                  <strong>{quantity}</strong>
+                </div>
+                <div className="totalsRow total">
+                  <span>Estimated total</span>
+                  <strong>${total}</strong>
+                </div>
+                <p className="qbNote">
+                  Final payment can be sent by QuickBooks invoice.
+                </p>
               </div>
             </div>
           </div>
@@ -303,15 +361,24 @@ export default function HomePage() {
               <strong>Color:</strong> {selectedColor}
             </p>
             <p>
+              <strong>Quantity:</strong> {quantity}
+            </p>
+            <p>
               <strong>Minimum:</strong> {selectedPackage.min} cards
+            </p>
+            <p>
+              <strong>Estimated Total:</strong> ${total}
+            </p>
+            <p>
+              <strong>Billing:</strong> QuickBooks invoice available
             </p>
           </div>
 
           <div className="actions">
-            <a href={`sms:${PHONE_RAW}`} className="btn primary">
+            <a href={`sms:${PHONE_RAW}?body=${quickbooksMessage}`} className="btn primary">
               Text to Order
             </a>
-            <a href={`mailto:${EMAIL}`} className="btn">
+            <a href={`mailto:${EMAIL}?subject=Metal Card Order Request&body=${quickbooksMessage}`} className="btn">
               {EMAIL}
             </a>
           </div>
@@ -409,7 +476,8 @@ export default function HomePage() {
         .builderPanel,
         .box,
         .card,
-        .builderPreview {
+        .builderPreview,
+        .totalsCard {
           background: rgba(8, 18, 38, 0.34);
           border: 1px solid rgba(255, 255, 255, 0.12);
           box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
@@ -459,6 +527,7 @@ export default function HomePage() {
         }
 
         .field input[type="text"],
+        .field input[type="number"],
         .field input[type="file"] {
           width: 100%;
           border-radius: 12px;
@@ -606,6 +675,30 @@ export default function HomePage() {
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.06em;
+        }
+
+        .totalsCard {
+          margin-top: 18px;
+          padding: 20px;
+        }
+
+        .totalsRow {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 10px 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .totalsRow.total {
+          font-size: 18px;
+          font-weight: 800;
+        }
+
+        .qbNote {
+          margin-top: 14px;
+          color: #dce7f7;
+          font-size: 14px;
         }
 
         @media (max-width: 920px) {
