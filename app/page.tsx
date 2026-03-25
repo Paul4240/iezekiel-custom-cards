@@ -127,100 +127,30 @@ export default function HomePage() {
   }, [selectedColor]);
 
   return (
-    <main className="wrap">
-      <section className="hero">
-        <div className="heroText">
-          <div className="eyebrow">Premium Metal Business Cards</div>
-          <h1>{OWNER} Custom Metal Cards</h1>
-          <p>
-            Premium metal business cards with clean pricing, strong presentation,
-            and fast ordering. Text or email to inquire about orders.
-          </p>
+    <main className="pageBg">
+      <div className="wrap">
+        <section className="hero">
+          <div className="heroText">
+            <div className="eyebrow">Premium Metal Business Cards</div>
+            <h1>{OWNER} Custom Metal Cards</h1>
+            <p>
+              Premium metal business cards with clean pricing, strong presentation,
+              and fast ordering. Text or email to inquire about orders.
+            </p>
 
-          <div className="actions">
-            <a href={`sms:${PHONE_RAW}`} className="btn primary">
-              Text {PHONE}
-            </a>
-            <a href={`mailto:${EMAIL}`} className="btn">
-              {EMAIL}
-            </a>
-          </div>
-        </div>
-
-        <div className="heroCard">
-          <div
-            className="cardPreview"
-            style={{
-              background: cardStyle.background,
-              color: cardStyle.color,
-              borderColor: cardStyle.border,
-            }}
-          >
-            <div className="shine" />
-            <div className="cardInner">
-              <div className="logoArea">
-                {logoPreview ? (
-                  <img src={logoPreview} alt="Uploaded logo preview" className="logoImage" />
-                ) : (
-                  <div className="logoPlaceholder">LOGO</div>
-                )}
-              </div>
-
-              <div className="cardText">
-                <div className="companyName">{companyName}</div>
-                <div className="tagline">{tagline}</div>
-              </div>
-
-              <div className="cardBottom">
-                <span>{selectedPackage.thickness}</span>
-                <span>{selectedColor}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="builder">
-        <h2>Card Preview Builder</h2>
-        <p className="sectionText">
-          Add company info and upload a logo to preview how the card can look.
-        </p>
-
-        <div className="builderGrid">
-          <div className="builderPanel">
-            <label className="field">
-              <span>Company Name</span>
-              <input
-                type="text"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Enter company name"
-              />
-            </label>
-
-            <label className="field">
-              <span>Text Under Logo / Main Line</span>
-              <input
-                type="text"
-                value={tagline}
-                onChange={(e) => setTagline(e.target.value)}
-                placeholder="Enter text"
-              />
-            </label>
-
-            <label className="field">
-              <span>Upload Logo</span>
-              <input type="file" accept="image/*" onChange={handleLogoUpload} />
-            </label>
-
-            <div className="builderNote">
-              Uploaded logo and text will display live on the card preview.
+            <div className="actions">
+              <a href={`sms:${PHONE_RAW}`} className="btn primary">
+                Text {PHONE}
+              </a>
+              <a href={`mailto:${EMAIL}`} className="btn">
+                {EMAIL}
+              </a>
             </div>
           </div>
 
-          <div className="builderPreview">
+          <div className="heroCard">
             <div
-              className="cardPreview large"
+              className="cardPreview"
               style={{
                 background: cardStyle.background,
                 color: cardStyle.color,
@@ -249,74 +179,151 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="packages">
-        <h2>Select Thickness</h2>
-
-        <div className="grid">
-          {packages.map((pkg) => (
-            <button
-              key={pkg.thickness}
-              type="button"
-              className={`card ${selectedPackage.thickness === pkg.thickness ? "active" : ""}`}
-              onClick={() => changePackage(pkg)}
-            >
-              <h3>{pkg.thickness}</h3>
-              <p>{pkg.label}</p>
-              <span>Min {pkg.min}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="colors">
-        <h2>Choose Color</h2>
-
-        <div className="colorGrid">
-          {selectedPackage.colors.map((color) => (
-            <button
-              type="button"
-              key={color}
-              className={selectedColor === color ? "active" : ""}
-              onClick={() => setSelectedColor(color)}
-            >
-              {color}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="summary">
-        <h2>Order Summary</h2>
-
-        <div className="box">
-          <p>
-            <strong>Thickness:</strong> {selectedPackage.thickness}
+        <section className="builder">
+          <h2>Card Preview Builder</h2>
+          <p className="sectionText">
+            Add company info and upload a logo to preview how the card can look.
           </p>
-          <p>
-            <strong>Price:</strong> {selectedPackage.label}
-          </p>
-          <p>
-            <strong>Color:</strong> {selectedColor}
-          </p>
-          <p>
-            <strong>Minimum:</strong> {selectedPackage.min} cards
-          </p>
-        </div>
 
-        <div className="actions">
-          <a href={`sms:${PHONE_RAW}`} className="btn primary">
-            Text to Order
-          </a>
-          <a href={`mailto:${EMAIL}`} className="btn">
-            {EMAIL}
-          </a>
-        </div>
-      </section>
+          <div className="builderGrid">
+            <div className="builderPanel">
+              <label className="field">
+                <span>Company Name</span>
+                <input
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="Enter company name"
+                />
+              </label>
+
+              <label className="field">
+                <span>Text Under Logo / Main Line</span>
+                <input
+                  type="text"
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value)}
+                  placeholder="Enter text"
+                />
+              </label>
+
+              <label className="field">
+                <span>Upload Logo</span>
+                <input type="file" accept="image/*" onChange={handleLogoUpload} />
+              </label>
+
+              <div className="builderNote">
+                Uploaded logo and text will display live on the card preview.
+              </div>
+            </div>
+
+            <div className="builderPreview">
+              <div
+                className="cardPreview large"
+                style={{
+                  background: cardStyle.background,
+                  color: cardStyle.color,
+                  borderColor: cardStyle.border,
+                }}
+              >
+                <div className="shine" />
+                <div className="cardInner">
+                  <div className="logoArea">
+                    {logoPreview ? (
+                      <img src={logoPreview} alt="Uploaded logo preview" className="logoImage" />
+                    ) : (
+                      <div className="logoPlaceholder">LOGO</div>
+                    )}
+                  </div>
+
+                  <div className="cardText">
+                    <div className="companyName">{companyName}</div>
+                    <div className="tagline">{tagline}</div>
+                  </div>
+
+                  <div className="cardBottom">
+                    <span>{selectedPackage.thickness}</span>
+                    <span>{selectedColor}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="packages">
+          <h2>Select Thickness</h2>
+
+          <div className="grid">
+            {packages.map((pkg) => (
+              <button
+                key={pkg.thickness}
+                type="button"
+                className={`card ${selectedPackage.thickness === pkg.thickness ? "active" : ""}`}
+                onClick={() => changePackage(pkg)}
+              >
+                <h3>{pkg.thickness}</h3>
+                <p>{pkg.label}</p>
+                <span>Min {pkg.min}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="colors">
+          <h2>Choose Color</h2>
+
+          <div className="colorGrid">
+            {selectedPackage.colors.map((color) => (
+              <button
+                type="button"
+                key={color}
+                className={selectedColor === color ? "active" : ""}
+                onClick={() => setSelectedColor(color)}
+              >
+                {color}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="summary">
+          <h2>Order Summary</h2>
+
+          <div className="box">
+            <p>
+              <strong>Thickness:</strong> {selectedPackage.thickness}
+            </p>
+            <p>
+              <strong>Price:</strong> {selectedPackage.label}
+            </p>
+            <p>
+              <strong>Color:</strong> {selectedColor}
+            </p>
+            <p>
+              <strong>Minimum:</strong> {selectedPackage.min} cards
+            </p>
+          </div>
+
+          <div className="actions">
+            <a href={`sms:${PHONE_RAW}`} className="btn primary">
+              Text to Order
+            </a>
+            <a href={`mailto:${EMAIL}`} className="btn">
+              {EMAIL}
+            </a>
+          </div>
+        </section>
+      </div>
 
       <style jsx>{`
+        .pageBg {
+          min-height: 100vh;
+          background: linear-gradient(135deg, #0a1f44 0%, #1e4fd6 55%, #3b82f6 100%);
+        }
+
         .wrap {
           padding: 40px 20px 80px;
           max-width: 1180px;
@@ -341,9 +348,9 @@ export default function HomePage() {
           font-weight: 700;
           letter-spacing: 0.12em;
           text-transform: uppercase;
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: #c8d3e5;
+          background: rgba(255, 255, 255, 0.12);
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          color: #dfe9ff;
         }
 
         h1 {
@@ -364,7 +371,7 @@ export default function HomePage() {
         p {
           margin: 0;
           line-height: 1.7;
-          color: #b8c5d6;
+          color: #e0e9f8;
         }
 
         .sectionText {
@@ -385,9 +392,9 @@ export default function HomePage() {
           min-height: 48px;
           padding: 0 18px;
           border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.16);
+          border: 1px solid rgba(255, 255, 255, 0.18);
           color: #eef2f7;
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(255, 255, 255, 0.08);
           font-weight: 700;
           text-decoration: none;
         }
@@ -403,10 +410,11 @@ export default function HomePage() {
         .box,
         .card,
         .builderPreview {
-          background: rgba(12, 19, 30, 0.82);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+          background: rgba(8, 18, 38, 0.34);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
           border-radius: 24px;
+          backdrop-filter: blur(10px);
         }
 
         .heroCard {
@@ -433,7 +441,7 @@ export default function HomePage() {
 
         .builderNote {
           margin-top: 14px;
-          color: #9fb0c4;
+          color: #d5e2fb;
           font-size: 14px;
         }
 
@@ -447,15 +455,15 @@ export default function HomePage() {
           margin-bottom: 8px;
           font-size: 14px;
           font-weight: 700;
-          color: #dce7f5;
+          color: #f2f7ff;
         }
 
         .field input[type="text"],
         .field input[type="file"] {
           width: 100%;
           border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          background: rgba(255, 255, 255, 0.08);
           color: #eef2f7;
           padding: 12px 14px;
         }
@@ -474,7 +482,7 @@ export default function HomePage() {
         }
 
         .card.active {
-          border: 2px solid rgba(255, 255, 255, 0.36);
+          border: 2px solid rgba(255, 255, 255, 0.42);
         }
 
         .card p {
@@ -490,8 +498,8 @@ export default function HomePage() {
         .colorGrid button {
           padding: 10px 16px;
           border-radius: 999px;
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          background: rgba(255, 255, 255, 0.08);
           color: #eef2f7;
           cursor: pointer;
           font-weight: 700;
@@ -546,35 +554,36 @@ export default function HomePage() {
         .logoArea {
           display: flex;
           align-items: center;
-          justify-content: flex-start;
+          justify-content: center;
         }
 
         .logoPlaceholder {
-          width: 84px;
-          height: 84px;
-          border-radius: 18px;
+          width: 140px;
+          height: 140px;
+          border-radius: 22px;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(255, 255, 255, 0.14);
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          font-size: 13px;
+          background: rgba(255, 255, 255, 0.16);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          font-size: 16px;
           font-weight: 800;
           letter-spacing: 0.08em;
         }
 
         .logoImage {
-          max-width: 120px;
-          max-height: 90px;
+          max-width: 180px;
+          max-height: 140px;
           object-fit: contain;
-          border-radius: 12px;
-          background: rgba(255, 255, 255, 0.08);
-          padding: 6px;
+          border-radius: 16px;
+          background: rgba(255, 255, 255, 0.1);
+          padding: 8px;
         }
 
         .cardText {
           display: grid;
           gap: 6px;
+          text-align: center;
         }
 
         .companyName {
@@ -625,8 +634,13 @@ export default function HomePage() {
           }
 
           .logoPlaceholder {
-            width: 68px;
-            height: 68px;
+            width: 110px;
+            height: 110px;
+          }
+
+          .logoImage {
+            max-width: 140px;
+            max-height: 100px;
           }
 
           .companyName {
