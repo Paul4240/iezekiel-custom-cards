@@ -49,6 +49,8 @@ export default function HomePage() {
   const [tagline, setTagline] = useState("Premium Metal Cards");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [quantityInput, setQuantityInput] = useState<string>(String(packages[0].min));
+  const [hasOwnLogo, setHasOwnLogo] = useState(false);
+  const [needLogoCreated, setNeedLogoCreated] = useState(false);
 
   const currentQuantity = useMemo(() => {
     const parsed = Number(quantityInput);
@@ -103,24 +105,44 @@ export default function HomePage() {
     setQuantityInput(String(parsed));
   };
 
+  const logoSetupFee = hasOwnLogo ? 25 : 0;
+  const logoCreationFee = needLogoCreated ? 50 : 0;
+
   const total = useMemo(() => {
-    return (currentQuantity * selectedPackage.price).toFixed(2);
-  }, [currentQuantity, selectedPackage.price]);
+    const base = currentQuantity * selectedPackage.price;
+    return (base + logoSetupFee + logoCreationFee).toFixed(2);
+  }, [currentQuantity, selectedPackage.price, logoSetupFee, logoCreationFee]);
 
   const quickbooksMessage = useMemo(() => {
+    const logoOption = hasOwnLogo
+      ? "Customer has own logo (+$25 startup fee)"
+      : needLogoCreated
+      ? "Create logo for customer (+$50)"
+      : "No logo add-on selected";
+
     return encodeURIComponent(
       `Hi, I want to order metal cards.
 
 Thickness: ${selectedPackage.thickness}
 Color: ${selectedColor}
 Quantity: ${currentQuantity}
-Estimated total: $${total}
 Company name: ${companyName}
 Text on card: ${tagline}
+Logo option: ${logoOption}
+Estimated total: $${total}
 
 Please send me the QuickBooks invoice.`
     );
-  }, [selectedPackage.thickness, selectedColor, currentQuantity, total, companyName, tagline]);
+  }, [
+    selectedPackage.thickness,
+    selectedColor,
+    currentQuantity,
+    companyName,
+    tagline,
+    hasOwnLogo,
+    needLogoCreated,
+    total,
+  ]);
 
   const cardStyle = useMemo(() => {
     switch (selectedColor.toLowerCase()) {
@@ -281,6 +303,36 @@ Please send me the QuickBooks invoice.`
                 />
               </label>
 
+              <div className="logoOptions">
+                <h3>Logo Options</h3>
+
+                <label className="optionRow">
+                  <input
+                    type="checkbox"
+                    checked={hasOwnLogo}
+                    onChange={() => {
+                      const next = !hasOwnLogo;
+                      setHasOwnLogo(next);
+                      if (next) setNeedLogoCreated(false);
+                    }}
+                  />
+                  <span>I have my own logo (+$25 startup fee)</span>
+                </label>
+
+                <label className="optionRow">
+                  <input
+                    type="checkbox"
+                    checked={needLogoCreated}
+                    onChange={() => {
+                      const next = !needLogoCreated;
+                      setNeedLogoCreated(next);
+                      if (next) setHasOwnLogo(false);
+                    }}
+                  />
+                  <span>Create logo for me (+$50)</span>
+                </label>
+              </div>
+
               <div className="builderNote">
                 Minimum order for this package is {selectedPackage.min} cards.
               </div>
@@ -326,6 +378,18 @@ Please send me the QuickBooks invoice.`
                   <span>Quantity</span>
                   <strong>{currentQuantity}</strong>
                 </div>
+                {hasOwnLogo && (
+                  <div className="totalsRow">
+                    <span>Own logo startup fee</span>
+                    <strong>$25.00</strong>
+                  </div>
+                )}
+                {needLogoCreated && (
+                  <div className="totalsRow">
+                    <span>Logo creation fee</span>
+                    <strong>$50.00</strong>
+                  </div>
+                )}
                 <div className="totalsRow total">
                   <span>Estimated total</span>
                   <strong>${total}</strong>
@@ -390,6 +454,16 @@ Please send me the QuickBooks invoice.`
             <p>
               <strong>Quantity:</strong> {currentQuantity}
             </p>
+            {hasOwnLogo && (
+              <p>
+                <strong>Own Logo Startup Fee:</strong> $25.00
+              </p>
+            )}
+            {needLogoCreated && (
+              <p>
+                <strong>Logo Creation Fee:</strong> $50.00
+              </p>
+            )}
             <p>
               <strong>Minimum:</strong> {selectedPackage.min} cards
             </p>
@@ -561,6 +635,27 @@ Please send me the QuickBooks invoice.`
           background: rgba(255, 255, 255, 0.08);
           color: #eef2f7;
           padding: 12px 14px;
+        }
+
+        .logoOptions {
+          margin-top: 20px;
+          padding: 16px;
+          border-radius: 16px;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .optionRow {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-top: 12px;
+          color: #eef2f7;
+        }
+
+        .optionRow input {
+          width: 16px;
+          height: 16px;
         }
 
         .grid {
