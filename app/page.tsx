@@ -52,26 +52,17 @@ export default function HomePage() {
   const [hasOwnLogo, setHasOwnLogo] = useState(false);
   const [needLogoCreated, setNeedLogoCreated] = useState(false);
 
-  const currentQuantity = useMemo(() => {
-    const parsed = Number(quantityInput);
-    if (quantityInput.trim() === "" || Number.isNaN(parsed)) return selectedPackage.min;
-    return Math.max(parsed, selectedPackage.min);
-  }, [quantityInput, selectedPackage.min]);
+  const currentQuantity = Math.max(Number(quantityInput) || 50, selectedPackage.min);
 
-  const changePackage = (pkg: CardPackage) => {
-    setSelectedPackage(pkg);
-    setSelectedColor(pkg.colors[0]);
-
-    const parsed = Number(quantityInput);
-    if (quantityInput.trim() === "" || Number.isNaN(parsed) || parsed < pkg.min) {
-      setQuantityInput(String(pkg.min));
-    }
-  };
+  const total = (
+    currentQuantity * selectedPackage.price +
+    (hasOwnLogo ? 25 : 0) +
+    (needLogoCreated ? 50 : 0)
+  ).toFixed(2);
 
   const handleLogoUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === "string") setLogoPreview(reader.result);
@@ -79,993 +70,182 @@ export default function HomePage() {
     reader.readAsDataURL(file);
   };
 
-  const handleQuantityChange = (value: string) => {
-    if (value === "") {
-      setQuantityInput("");
-      return;
-    }
-    if (/^\d+$/.test(value)) setQuantityInput(value);
-  };
-
-  const handleQuantityBlur = () => {
-    const parsed = Number(quantityInput);
-    if (quantityInput.trim() === "" || Number.isNaN(parsed) || parsed < selectedPackage.min) {
-      setQuantityInput(String(selectedPackage.min));
-      return;
-    }
-    setQuantityInput(String(parsed));
-  };
-
-  const logoSetupFee = hasOwnLogo ? 25 : 0;
-  const logoCreationFee = needLogoCreated ? 50 : 0;
-
-  const total = useMemo(() => {
-    const base = currentQuantity * selectedPackage.price;
-    return (base + logoSetupFee + logoCreationFee).toFixed(2);
-  }, [currentQuantity, selectedPackage.price, logoSetupFee, logoCreationFee]);
-
-  const quickbooksMessage = useMemo(() => {
-    const logoOption = hasOwnLogo
-      ? "Customer has own logo (+$25 startup fee)"
-      : needLogoCreated
-      ? "Create logo for customer (+$50)"
-      : "No logo add-on selected";
-
-    return encodeURIComponent(
-      `Hi, I want to order metal cards.
-
-Thickness: ${selectedPackage.thickness}
-Color: ${selectedColor}
-Quantity: ${currentQuantity}
-Company name: ${companyName}
-Text on card: ${tagline}
-Logo option: ${logoOption}
-Estimated total: $${total}
-
-Please send me the QuickBooks invoice.`
-    );
-  }, [
-    selectedPackage.thickness,
-    selectedColor,
-    currentQuantity,
-    companyName,
-    tagline,
-    hasOwnLogo,
-    needLogoCreated,
-    total,
-  ]);
-
-  const cardStyle = useMemo(() => {
-    switch (selectedColor.toLowerCase()) {
-      case "violet":
-        return {
-          background: "linear-gradient(135deg, #3b1265 0%, #6f36c6 50%, #bb88ff 100%)",
-          color: "#ffffff",
-          border: "rgba(230,215,255,.4)",
-          glow: "rgba(167, 104, 255, .42)",
-        };
-      case "black":
-        return {
-          background: "linear-gradient(135deg, #090b10 0%, #171d29 50%, #2e3645 100%)",
-          color: "#ffffff",
-          border: "rgba(255,255,255,.14)",
-          glow: "rgba(255,255,255,.12)",
-        };
-      case "green":
-        return {
-          background: "linear-gradient(135deg, #0b3827 0%, #1e7a53 50%, #4fd494 100%)",
-          color: "#ffffff",
-          border: "rgba(187,255,223,.28)",
-          glow: "rgba(79, 212, 148, .30)",
-        };
-      case "blue":
-        return {
-          background: "linear-gradient(135deg, #082861 0%, #1450c5 55%, #60a5ff 100%)",
-          color: "#ffffff",
-          border: "rgba(187,220,255,.28)",
-          glow: "rgba(96, 165, 255, .34)",
-        };
-      case "red":
-        return {
-          background: "linear-gradient(135deg, #4d0d18 0%, #ba2137 55%, #ff6678 100%)",
-          color: "#ffffff",
-          border: "rgba(255,200,206,.24)",
-          glow: "rgba(255, 102, 120, .28)",
-        };
-      case "rose gold":
-        return {
-          background: "linear-gradient(135deg, #6f463d 0%, #bf7b6d 55%, #f0c5bc 100%)",
-          color: "#fffaf7",
-          border: "rgba(255,235,228,.28)",
-          glow: "rgba(240, 197, 188, .24)",
-        };
-      case "golden bronze":
-        return {
-          background: "linear-gradient(135deg, #5c3b1a 0%, #b57b31 55%, #e5bf82 100%)",
-          color: "#fffaf1",
-          border: "rgba(255,229,189,.26)",
-          glow: "rgba(229, 191, 130, .24)",
-        };
-      case "silver":
-        return {
-          background: "linear-gradient(135deg, #848d99 0%, #d8dde4 52%, #fbfdff 100%)",
-          color: "#101827",
-          border: "rgba(255,255,255,.48)",
-          glow: "rgba(255,255,255,.24)",
-        };
-      default:
-        return {
-          background: "linear-gradient(135deg, #090b10 0%, #171d29 50%, #2e3645 100%)",
-          color: "#ffffff",
-          border: "rgba(255,255,255,.14)",
-          glow: "rgba(255,255,255,.12)",
-        };
-    }
-  }, [selectedColor]);
-
   return (
     <main className="pageBg">
-      <div className="ambient ambientOne" />
-      <div className="ambient ambientTwo" />
-      <div className="ambient ambientThree" />
-
       <div className="wrap">
+
         <section className="hero">
-          <div className="heroLeft">
-            <div className="eyebrow">Premium Metal Business Cards</div>
+          {/* LEFT */}
+          <div>
             <h1>{OWNER} Custom Metal Cards</h1>
-            <p className="heroText">
+            <p>
               Premium metal business cards with clear pricing, strong presentation,
               and fast ordering. Text or email to inquire about orders.
             </p>
 
-            <div className="heroActions">
-              <a href={`sms:${PHONE_RAW}`} className="cta primary">
+            <div className="actions">
+              <a href={`sms:${PHONE_RAW}`} className="btn primary">
                 Text {PHONE}
               </a>
-              <a href={`mailto:${EMAIL}`} className="cta secondary">
+              <a href={`mailto:${EMAIL}`} className="btn">
                 {EMAIL}
               </a>
             </div>
-
-            <div className="heroStats">
-              <div>
-                <span>QuickBooks</span>
-                <strong>Invoice Ready</strong>
-              </div>
-              <div>
-                <span>Minimum Order</span>
-                <strong>{selectedPackage.min} Cards</strong>
-              </div>
-              <div>
-                <span>Current Total</span>
-                <strong>${total}</strong>
-              </div>
-            </div>
           </div>
 
+          {/* RIGHT CARD */}
           <div className="heroRight">
-            <div
-              className="cardGlow"
-              style={{ background: `radial-gradient(circle, ${cardStyle.glow} 0%, transparent 70%)` }}
-            />
-            <div
-              className="cardPreview"
-              style={{
-                background: cardStyle.background,
-                color: cardStyle.color,
-                borderColor: cardStyle.border,
-              }}
-            >
-              <div className="shine" />
-              <div className="cardInner">
-                <div className="cardTop">
-                  <div className="logoArea">
-                    {logoPreview ? (
-                      <img src={logoPreview} alt="Uploaded logo preview" className="logoImage" />
-                    ) : (
-                      <div className="logoPlaceholder">LOGO</div>
-                    )}
-                  </div>
-                </div>
+            <div className="cardGlow" />
 
-                <div className="cardMiddle">
-                  <div className="companyName">{companyName}</div>
-                  <div className="tagline">{tagline}</div>
-                </div>
+            <div className="card">
+              <div className="logoBox">
+                {logoPreview ? <img src={logoPreview} /> : <span>LOGO</span>}
+              </div>
 
-                <div className="cardBottom">
-                  <span>{selectedPackage.thickness}</span>
-                  <span>{selectedColor}</span>
-                </div>
+              <div className="cardText">
+                <h3>{companyName}</h3>
+                <p>{tagline}</p>
+              </div>
+
+              <div className="meta">
+                {selectedPackage.thickness} • {selectedColor}
               </div>
             </div>
           </div>
         </section>
 
-        <section className="builderSection">
-          <div className="sectionTitle">
-            <span>Build Your Card</span>
-            <h2>Choose the package, color, logo option, and quantity.</h2>
-          </div>
+        {/* BUILDER */}
+        <section className="builder">
+          <input value={companyName} onChange={(e)=>setCompanyName(e.target.value)} placeholder="Company Name"/>
+          <input value={tagline} onChange={(e)=>setTagline(e.target.value)} placeholder="Tagline"/>
+          <input type="file" onChange={handleLogoUpload}/>
+          <input value={quantityInput} onChange={(e)=>setQuantityInput(e.target.value)} />
 
-          <div className="selectorBlock">
-            <div className="selectorLabel">Thickness</div>
-            <div className="chipRow">
-              {packages.map((pkg) => (
-                <button
-                  key={pkg.thickness}
-                  type="button"
-                  className={`chip packageChip ${
-                    selectedPackage.thickness === pkg.thickness ? "active" : ""
-                  }`}
-                  onClick={() => changePackage(pkg)}
-                >
-                  <span className="chipTop">{pkg.thickness}</span>
-                  <span className="chipBottom">
-                    {pkg.label} · Min {pkg.min}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <label>
+            <input type="checkbox" checked={hasOwnLogo}
+              onChange={()=>{setHasOwnLogo(!hasOwnLogo); setNeedLogoCreated(false);}}/>
+            Own Logo (+$25)
+          </label>
 
-          <div className="selectorBlock">
-            <div className="selectorLabel">Color</div>
-            <div className="chipRow">
-              {selectedPackage.colors.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  className={`chip colorChip ${selectedColor === color ? "active" : ""}`}
-                  onClick={() => setSelectedColor(color)}
-                >
-                  {color}
-                </button>
-              ))}
-            </div>
-          </div>
+          <label>
+            <input type="checkbox" checked={needLogoCreated}
+              onChange={()=>{setNeedLogoCreated(!needLogoCreated); setHasOwnLogo(false);}}/>
+            Create Logo (+$50)
+          </label>
 
-          <div className="builderGrid">
-            <div className="formArea">
-              <div className="inputGrid">
-                <label className="field">
-                  <span>Company Name</span>
-                  <input
-                    type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="Enter company name"
-                  />
-                </label>
-
-                <label className="field">
-                  <span>Text Under Logo / Main Line</span>
-                  <input
-                    type="text"
-                    value={tagline}
-                    onChange={(e) => setTagline(e.target.value)}
-                    placeholder="Enter text"
-                  />
-                </label>
-              </div>
-
-              <div className="inputGrid twoCols">
-                <label className="field">
-                  <span>Upload Logo</span>
-                  <input type="file" accept="image/*" onChange={handleLogoUpload} />
-                </label>
-
-                <label className="field">
-                  <span>Quantity</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={quantityInput}
-                    onChange={(e) => handleQuantityChange(e.target.value)}
-                    onBlur={handleQuantityBlur}
-                    placeholder={`Minimum ${selectedPackage.min}`}
-                  />
-                </label>
-              </div>
-
-              <div className="optionLine">
-                <label className={`toggle ${hasOwnLogo ? "active" : ""}`}>
-                  <input
-                    type="checkbox"
-                    checked={hasOwnLogo}
-                    onChange={() => {
-                      const next = !hasOwnLogo;
-                      setHasOwnLogo(next);
-                      if (next) setNeedLogoCreated(false);
-                    }}
-                  />
-                  <span>I have my own logo</span>
-                  <strong>+$25</strong>
-                </label>
-
-                <label className={`toggle ${needLogoCreated ? "active" : ""}`}>
-                  <input
-                    type="checkbox"
-                    checked={needLogoCreated}
-                    onChange={() => {
-                      const next = !needLogoCreated;
-                      setNeedLogoCreated(next);
-                      if (next) setHasOwnLogo(false);
-                    }}
-                  />
-                  <span>Create logo for me</span>
-                  <strong>+$50</strong>
-                </label>
-              </div>
-
-              <div className="microNote">
-                Minimum order for this package is {selectedPackage.min} cards.
-              </div>
-            </div>
-
-            <div className="summaryArea">
-              <div className="summaryLines">
-                <div className="summaryLine">
-                  <span>Package</span>
-                  <strong>{selectedPackage.thickness}</strong>
-                </div>
-                <div className="summaryLine">
-                  <span>Price Per Card</span>
-                  <strong>{selectedPackage.label}</strong>
-                </div>
-                <div className="summaryLine">
-                  <span>Color</span>
-                  <strong>{selectedColor}</strong>
-                </div>
-                <div className="summaryLine">
-                  <span>Quantity</span>
-                  <strong>{currentQuantity}</strong>
-                </div>
-                {hasOwnLogo && (
-                  <div className="summaryLine">
-                    <span>Own Logo Startup Fee</span>
-                    <strong>$25.00</strong>
-                  </div>
-                )}
-                {needLogoCreated && (
-                  <div className="summaryLine">
-                    <span>Logo Creation Fee</span>
-                    <strong>$50.00</strong>
-                  </div>
-                )}
-                <div className="summaryLine total">
-                  <span>Estimated Total</span>
-                  <strong>${total}</strong>
-                </div>
-              </div>
-
-              <div className="summaryFoot">
-                Final payment can be sent by QuickBooks invoice.
-              </div>
-
-              <div className="heroActions">
-                <a href={`sms:${PHONE_RAW}?body=${quickbooksMessage}`} className="cta primary">
-                  Text to Order
-                </a>
-                <a
-                  href={`mailto:${EMAIL}?subject=Metal Card Order Request&body=${quickbooksMessage}`}
-                  className="cta secondary"
-                >
-                  {EMAIL}
-                </a>
-              </div>
-            </div>
-          </div>
+          <h2>Total: ${total}</h2>
         </section>
+
       </div>
 
       <style jsx>{`
         .pageBg {
-          position: relative;
           min-height: 100vh;
-          overflow: hidden;
-          background:
-            radial-gradient(circle at 15% 20%, rgba(118, 189, 255, 0.26), transparent 22%),
-            radial-gradient(circle at 85% 18%, rgba(255, 255, 255, 0.1), transparent 14%),
-            linear-gradient(135deg, #041536 0%, #0f3fa8 48%, #2f7df7 100%);
-        }
-
-        .ambient {
-          position: absolute;
-          border-radius: 999px;
-          filter: blur(90px);
-          pointer-events: none;
-          opacity: 0.5;
-        }
-
-        .ambientOne {
-          width: 260px;
-          height: 260px;
-          background: rgba(115, 205, 255, 0.26);
-          top: 120px;
-          left: -70px;
-        }
-
-        .ambientTwo {
-          width: 280px;
-          height: 280px;
-          background: rgba(255, 255, 255, 0.14);
-          top: 40px;
-          right: -100px;
-        }
-
-        .ambientThree {
-          width: 320px;
-          height: 320px;
-          background: rgba(78, 134, 255, 0.22);
-          bottom: 80px;
-          right: 10%;
+          background: linear-gradient(135deg, #0f2d6b, #1e4fd8, #3b82f6);
+          color: white;
         }
 
         .wrap {
-          position: relative;
-          z-index: 1;
-          width: min(1180px, calc(100% - 32px));
-          margin: 0 auto;
-          padding: 42px 0 90px;
-          color: #eef4ff;
+          max-width: 1100px;
+          margin: auto;
+          padding: 40px 20px;
         }
 
         .hero {
           display: grid;
-          grid-template-columns: 1.02fr 0.98fr;
-          gap: 36px;
+          grid-template-columns: 1fr 1fr;
+          gap: 40px;
           align-items: start;
-          padding: 24px 0 10px;
-          min-height: 640px;
-        }
-
-        .eyebrow {
-          display: inline-flex;
-          align-items: center;
-          padding: 9px 14px;
-          border-radius: 999px;
-          font-size: 12px;
-          font-weight: 800;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          color: #e5f0ff;
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
-        }
-
-        h1,
-        h2,
-        h3,
-        p {
-          margin: 0;
-        }
-
-        h1 {
-          margin-top: 18px;
-          font-size: clamp(42px, 6vw, 74px);
-          line-height: 0.96;
-          letter-spacing: -0.04em;
-          max-width: 720px;
-        }
-
-        .heroText {
-          margin-top: 18px;
-          max-width: 640px;
-          font-size: 18px;
-          line-height: 1.8;
-          color: #e3ecff;
-        }
-
-        .heroActions {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 12px;
-          margin-top: 24px;
-        }
-
-        .cta {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 50px;
-          padding: 0 18px;
-          border-radius: 14px;
-          font-weight: 800;
-          text-decoration: none;
-          transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-        }
-
-        .cta:hover {
-          transform: translateY(-1px);
-        }
-
-        .cta.primary {
-          background: linear-gradient(135deg, #ffffff 0%, #dbe8ff 100%);
-          color: #071327;
-          box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
-        }
-
-        .cta.secondary {
-          color: #f3f7ff;
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.16);
-        }
-
-        .heroStats {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 14px;
-          margin-top: 26px;
-        }
-
-        .heroStats div {
-          padding: 14px 0;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-        }
-
-        .heroStats span {
-          display: block;
-          font-size: 11px;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: #d4e2ff;
-          margin-bottom: 6px;
-        }
-
-        .heroStats strong {
-          font-size: 15px;
-          font-weight: 800;
-          color: #ffffff;
+          min-height: 650px;
         }
 
         .heroRight {
           position: relative;
           display: flex;
           justify-content: center;
-          align-items: flex-start;
-          padding-top: 120px;
-        }
-
-        @media (min-width: 980px) {
-          .heroRight {
-            position: sticky;
-            top: 70px;
-            align-self: start;
-          }
+          padding-top: 260px; /* 🔥 THIS DROPS IT LOWER */
         }
 
         .cardGlow {
           position: absolute;
-          width: 620px;
-          height: 620px;
-          left: 50%;
-          top: 110px;
-          transform: translateX(-50%);
-          filter: blur(24px);
-          opacity: 0.95;
-          pointer-events: none;
+          width: 500px;
+          height: 500px;
+          background: radial-gradient(circle, rgba(255,255,255,.2), transparent 70%);
+          filter: blur(40px);
         }
 
-        .cardPreview {
+        .card {
+          width: 460px;
+          height: 260px;
+          background: linear-gradient(135deg,#111,#333);
+          border-radius: 20px;
+          padding: 20px;
           position: relative;
-          width: min(100%, 560px);
-          aspect-ratio: 1.68 / 1;
-          border-radius: 34px;
-          border: 1px solid;
-          overflow: hidden;
-          box-shadow:
-            0 45px 90px rgba(0, 0, 0, 0.36),
-            0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-          transform: translateY(110px) perspective(1200px) rotateX(8deg) rotateY(-10deg);
-          transition: transform 0.28s ease, box-shadow 0.28s ease;
-          z-index: 3;
+
+          transform: translateY(200px) rotateX(8deg) rotateY(-10deg);
+          box-shadow: 0 40px 100px rgba(0,0,0,.5);
+          transition: .3s;
         }
 
-        .cardPreview:hover {
-          transform: translateY(98px) perspective(1200px) rotateX(5deg) rotateY(-6deg);
-          box-shadow:
-            0 55px 110px rgba(0, 0, 0, 0.4),
-            0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+        .card:hover {
+          transform: translateY(180px) rotateX(5deg) rotateY(-5deg);
         }
 
-        .shine {
-          position: absolute;
-          inset: 0;
-          background:
-            linear-gradient(120deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 30%),
-            radial-gradient(circle at top right, rgba(255,255,255,0.2), transparent 30%);
-          pointer-events: none;
+        .logoBox {
+          width: 150px;
+          height: 150px;
+          background: rgba(255,255,255,.2);
+          display:flex;
+          align-items:center;
+          justify-content:center;
         }
 
-        .cardInner {
-          position: relative;
-          z-index: 1;
-          height: 100%;
-          padding: 28px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
+        .logoBox img {
+          max-width:100%;
         }
 
-        .cardTop {
-          display: flex;
-          justify-content: center;
+        .cardText {
+          position:absolute;
+          bottom:20px;
+          left:20px;
         }
 
-        .logoArea {
-          display: flex;
-          justify-content: center;
-          align-items: center;
+        .meta {
+          position:absolute;
+          bottom:10px;
+          right:20px;
+          font-size:12px;
         }
 
-        .logoPlaceholder {
-          width: 155px;
-          height: 155px;
-          border-radius: 26px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          background: rgba(255, 255, 255, 0.16);
-          border: 1px solid rgba(255, 255, 255, 0.22);
-          font-size: 17px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          backdrop-filter: blur(6px);
+        .actions {
+          margin-top:20px;
+          display:flex;
+          gap:10px;
         }
 
-        .logoImage {
-          max-width: 200px;
-          max-height: 150px;
-          object-fit: contain;
-          border-radius: 18px;
-          background: rgba(255, 255, 255, 0.12);
-          padding: 8px;
+        .btn {
+          padding:10px 15px;
+          border-radius:10px;
+          border:1px solid white;
         }
 
-        .cardMiddle {
-          text-align: center;
+        .btn.primary {
+          background:white;
+          color:black;
         }
 
-        .companyName {
-          font-size: clamp(28px, 3vw, 40px);
-          font-weight: 900;
-          line-height: 1.02;
+        .builder {
+          margin-top:200px; /* space for overlap */
+          display:flex;
+          flex-direction:column;
+          gap:12px;
+          max-width:400px;
         }
 
-        .tagline {
-          margin-top: 8px;
-          font-size: 16px;
-          font-weight: 700;
-          opacity: 0.95;
-        }
-
-        .cardBottom {
-          display: flex;
-          justify-content: space-between;
-          gap: 12px;
-          font-size: 14px;
-          font-weight: 900;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-        }
-
-        .builderSection {
-          position: relative;
-          z-index: 1;
-          margin-top: 40px;
-          padding-top: 70px;
-        }
-
-        .sectionTitle span {
-          display: inline-block;
-          font-size: 12px;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: #dbe7ff;
-          margin-bottom: 10px;
-        }
-
-        .sectionTitle h2 {
-          font-size: clamp(30px, 4vw, 46px);
-          line-height: 1.02;
-          letter-spacing: -0.03em;
-          max-width: 760px;
-        }
-
-        .selectorBlock {
-          margin-top: 30px;
-        }
-
-        .selectorLabel {
-          font-size: 13px;
-          font-weight: 800;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          color: #dce7ff;
-          margin-bottom: 14px;
-        }
-
-        .chipRow {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 12px;
-        }
-
-        .chip {
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: rgba(255, 255, 255, 0.08);
-          color: #eef4ff;
-          border-radius: 999px;
-          cursor: pointer;
-          transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
-          backdrop-filter: blur(10px);
-        }
-
-        .chip:hover {
-          transform: translateY(-1px);
-        }
-
-        .chip.active {
-          background: rgba(255, 255, 255, 0.18);
-          border-color: rgba(255, 255, 255, 0.26);
-          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
-        }
-
-        .packageChip {
-          padding: 14px 18px;
-          text-align: left;
-          border-radius: 22px;
-        }
-
-        .chipTop {
-          display: block;
-          font-size: 18px;
-          font-weight: 900;
-          margin-bottom: 4px;
-        }
-
-        .chipBottom {
-          display: block;
-          font-size: 12px;
-          color: #dce7ff;
-          letter-spacing: 0.04em;
-        }
-
-        .colorChip {
-          min-height: 46px;
-          padding: 0 18px;
-          font-weight: 800;
-        }
-
-        .builderGrid {
-          display: grid;
-          grid-template-columns: 1.02fr 0.98fr;
-          gap: 28px;
-          margin-top: 30px;
-          align-items: start;
-        }
-
-        .inputGrid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 16px;
-        }
-
-        .inputGrid.twoCols {
-          grid-template-columns: 1fr 1fr;
-          margin-top: 16px;
-        }
-
-        .field span {
-          display: block;
-          margin-bottom: 8px;
-          font-size: 13px;
-          font-weight: 800;
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
-          color: #e7efff;
-        }
-
-        .field input[type="text"],
-        .field input[type="file"] {
-          width: 100%;
-          min-height: 54px;
-          padding: 0 16px;
-          border-radius: 16px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: rgba(255, 255, 255, 0.08);
-          color: #f6f9ff;
-          outline: none;
-          backdrop-filter: blur(8px);
-        }
-
-        .field input[type="file"] {
-          padding: 12px 16px;
-        }
-
-        .field input::placeholder {
-          color: rgba(240, 246, 255, 0.62);
-        }
-
-        .optionLine {
-          display: grid;
-          gap: 12px;
-          margin-top: 18px;
-        }
-
-        .toggle {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          padding: 14px 16px;
-          border-radius: 18px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: rgba(255, 255, 255, 0.08);
-          cursor: pointer;
-          backdrop-filter: blur(8px);
-        }
-
-        .toggle.active {
-          background: rgba(255, 255, 255, 0.16);
-          border-color: rgba(255, 255, 255, 0.24);
-          box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
-        }
-
-        .toggle input {
-          width: 16px;
-          height: 16px;
-          margin-right: 8px;
-          accent-color: #ffffff;
-        }
-
-        .toggle span {
-          flex: 1;
-          font-weight: 700;
-        }
-
-        .toggle strong {
-          font-size: 15px;
-          font-weight: 900;
-        }
-
-        .microNote {
-          margin-top: 16px;
-          font-size: 14px;
-          color: #d8e6ff;
-        }
-
-        .summaryLines {
-          display: grid;
-          gap: 10px;
-        }
-
-        .summaryLine {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 14px;
-          padding: 10px 0;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-        }
-
-        .summaryLine span {
-          color: #dce8ff;
-        }
-
-        .summaryLine strong {
-          font-weight: 900;
-          color: #ffffff;
-          text-align: right;
-        }
-
-        .summaryLine.total {
-          padding-top: 16px;
-          font-size: 19px;
-        }
-
-        .summaryFoot {
-          margin-top: 18px;
-          color: #dbe8ff;
-          line-height: 1.7;
-        }
-
-        @media (max-width: 980px) {
-          .hero,
-          .builderGrid {
-            grid-template-columns: 1fr;
-          }
-
-          .hero {
-            min-height: auto;
-          }
-
-          .heroStats {
-            grid-template-columns: 1fr;
-          }
-
-          .inputGrid.twoCols {
-            grid-template-columns: 1fr;
-          }
-
-          .heroRight {
-            padding-top: 10px;
-            position: relative;
-            top: auto;
-          }
-
-          .cardGlow {
-            top: 30px;
-            width: 500px;
-            height: 500px;
-          }
-
-          .cardPreview {
-            transform: translateY(40px);
-          }
-
-          .cardPreview:hover {
-            transform: translateY(34px);
-          }
-
-          .builderSection {
-            margin-top: 34px;
-            padding-top: 30px;
-          }
-        }
-
-        @media (max-width: 720px) {
-          .wrap {
-            width: min(100% - 24px, 1180px);
-            padding: 30px 0 64px;
-          }
-
-          h1 {
-            font-size: 44px;
-          }
-
-          .heroActions {
-            flex-direction: column;
-          }
-
-          .cta {
-            width: 100%;
-          }
-
-          .chipRow {
-            gap: 10px;
-          }
-
-          .packageChip,
-          .colorChip {
-            width: 100%;
-          }
-
-          .logoPlaceholder {
-            width: 120px;
-            height: 120px;
-          }
-
-          .logoImage {
-            max-width: 150px;
-            max-height: 110px;
-          }
-
-          .cardInner {
-            padding: 20px;
-          }
-
-          .companyName {
-            font-size: 24px;
-          }
-
-          .tagline,
-          .cardBottom {
-            font-size: 12px;
-          }
+        input {
+          padding:10px;
+          border-radius:8px;
+          border:none;
         }
       `}</style>
     </main>
